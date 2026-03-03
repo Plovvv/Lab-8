@@ -53,9 +53,12 @@ while True:
         dp=1,
         minDist=20,
         param1=50,
-        param2=35,
+        param2=45,
         minRadius=50,
-        maxRadius=300)
+        maxRadius=200)
+
+    marker_found = False
+    marker_x = None
     
     if circles is not None:
         circles = np.uint16(np.around(circles))
@@ -69,19 +72,24 @@ while True:
                 continue
             roi = cv.resize(roi, (200,200))
 
-            _, roi_bin = cv.threshold(roi, 127, 255, cv.THRESH_BINARY)
+            _, roi_bin = cv.threshold(roi, 200, 255, cv.THRESH_BINARY)
 
             white_ratio = np.sum(roi_bin == 255) / (200*200)
 
-            if 0.35 < white_ratio < 0.65: 
+            if 0.4 < white_ratio < 0.6: 
                 for i in circles[0,:]:
                     cv.circle(frame,(i[0],i[1]),i[2],(0,255,0),2)
                     # cv.circle(frame,(i[0],i[1]),2,(0,0,255),3)
-                    frame[i[1]-h_f//2:i[1]+h_f//2, i[0]-w_f//2:i[0]+w_f//2] = img_fly
+                    roi = frame[i[1]-h_f//2:i[1]-h_f//2+h_f, i[0]-w_f//2:i[0]-w_f//2+w_f]
+                    if roi.shape == img_fly.shape:
+                        frame[i[1]-h_f//2:i[1]-h_f//2+h_f, i[0]-w_f//2:i[0]-w_f//2+w_f] = img_fly
 
                     break
             
-            if x >= frame.shape[1]/2:
+            marker_found = True
+            marker_x = x
+            
+            if marker_found and marker_x >= frame.shape[1]//2:
                 font = cv.FONT_HERSHEY_SIMPLEX
                 cv.putText(frame,'Right',(50,frame.shape[0]-10), font, 1,(255,255,255),2,cv.LINE_AA)
     
